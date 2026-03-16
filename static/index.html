@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>새로운시작 - Anti-Gravity Song Creator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+ 
+  :root {
+    --bg: #0a0a12;
+    --bg2: #11111e;
+    --bg3: #181826;
+    --accent1: #7c6ff7;
+    --accent2: #a855f7;
+    --accent3: #06b6d4;
+    --accent4: #f472b6;
+    --text: #f1f0ff;
+    --text2: #a09fc0;
+    --text3: #6b6a8a;
+    --border: rgba(124,111,247,0.18);
+    --card: rgba(17,17,30,0.92);
+    --glow: rgba(124,111,247,0.13);
+  }
+ 
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+ 
+  /* ── Starfield bg ── */
+  #stars {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse at 20% 30%, rgba(124,111,247,0.07) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 70%, rgba(168,85,247,0.06) 0%, transparent 55%),
+                radial-gradient(ellipse at 55% 10%, rgba(6,182,212,0.05) 0%, transparent 40%);
+  }
+  .star {
+    position: absolute; border-radius: 50%; background: white;
+    animation: twinkle var(--d,3s) ease-in-out infinite var(--delay,0s);
+  }
+  @keyframes twinkle {
+    0%,100%{opacity:0.1;transform:scale(1)}
+    50%{opacity:0.8;transform:scale(1.4)}
+  }
+ 
+  /* ── Layout ── */
+  .container {
+    position: relative; z-index: 1;
+    max-width: 780px; margin: 0 auto;
+    padding: 36px 20px 100px;
+  }
+ 
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; }
+  .header .logo-orbit {
+    display: inline-block; position: relative;
+    width: 64px; height: 64px; margin-bottom: 14px;
+  }
+  .logo-orbit .core {
+    position: absolute; inset: 50%; transform: translate(-50%,-50%);
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    box-shadow: 0 0 18px rgba(124,111,247,0.6);
+  }
+  .logo-orbit .ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 1.5px solid rgba(124,111,247,0.35);
+    animation: spin 6s linear infinite;
+  }
+  .logo-orbit .dot {
+    position: absolute; top: 2px; left: 50%; transform: translateX(-50%);
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent3);
+    box-shadow: 0 0 8px var(--accent3);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+ 
+  .header h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 32px; font-weight: 700; letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #a78bfa, #7c6ff7, #06b6d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header p { color: var(--text2); font-size: 13px; margin-top: 6px; }
+ 
+  /* ── Section card ── */
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(12px);
+    transition: border-color .2s;
+  }
+  .section:hover { border-color: rgba(124,111,247,0.35); }
+ 
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .section-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+  .section-title { font-size: 14px; font-weight: 500; color: var(--text); }
+  .section-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+ 
+  /* ── Tag chips ── */
+  .tag-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    color: var(--text2);
+    transition: all .15s;
+    user-select: none;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .tag:hover { border-color: var(--accent1); color: var(--text); background: rgba(124,111,247,0.08); }
+  .tag.active {
+    background: rgba(124,111,247,0.18);
+    border-color: var(--accent1);
+    color: #c4bbff;
+  }
+ 
+  /* ── Textarea ── */
+  .styled-textarea {
+    width: 100%; min-height: 110px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text); font-size: 13px; line-height: 1.7;
+    padding: 14px 16px; resize: vertical;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: border-color .2s;
+  }
+  .styled-textarea:focus { outline: none; border-color: rgba(124,111,247,0.5); }
+  .styled-textarea::placeholder { color: var(--text3); }
+  .char-count { text-align: right; font-size: 11px; color: var(--text3); margin-top: 6px; }
+ 
+  /* ── Vocal style cards ── */
+  .vocal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+  }
+  .vocal-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 10px 12px;
+    text-align: center; cursor: pointer;
+    transition: all .2s;
+  }
+  .vocal-card:hover { border-color: var(--accent1); background: rgba(124,111,247,0.07); }
+  .vocal-card.active { border-color: var(--accent1); background: rgba(124,111,247,0.15); }
+  .vocal-card .vc-icon { font-size: 22px; margin-bottom: 6px; display: block; }
+  .vocal-card .vc-label { font-size: 11.5px; color: var(--text2); font-weight: 400; }
+  .vocal-card.active .vc-label { color: #c4bbff; }
+  .vocal-card .vc-sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+ 
+  /* ── Toggle row ── */
+  .toggle-row { display: flex; gap: 8px; }
+  .toggle-btn {
+    flex: 1; padding: 9px 0; border-radius: 8px; border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03); color: var(--text2);
+    font-size: 12.5px; cursor: pointer; transition: all .15s;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .toggle-btn:hover { border-color: var(--accent1); color: var(--text); }
+  .toggle-btn.active { background: rgba(124,111,247,0.18); border-color: var(--accent1); color: #c4bbff; }
+ 
+  /* ── 노래 형식 선택 ── */
+  .format-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  }
+  .format-card {
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 12px; cursor: pointer;
+    background: rgba(255,255,255,0.03);
+    transition: all .2s;
+  }
+  .format-card:hover { border-color: var(--accent1); }
+  .format-card.active { border-color: var(--accent2); background: rgba(168,85,247,0.1); }
+  .format-card .fc-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .format-card .fc-ico { font-size: 16px; }
+  .format-card .fc-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .format-card .fc-desc { font-size: 11px; color: var(--text3); line-height: 1.5; }
+ 
+  /* ── Prompt preview ── */
+  .prompt-preview {
+    background: rgba(6,182,212,0.05);
+    border: 1px dashed rgba(6,182,212,0.25);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 12px;
+    color: #7ee8f8;
+    line-height: 1.8;
+    font-family: 'Space Grotesk', monospace;
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
+  .prompt-label {
+    font-size: 11px; color: var(--text3); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+ 
+  /* ── AI Response ── */
+  .ai-response-box {
+    background: rgba(17,17,30,0.95);
+    border: 1px solid rgba(124,111,247,0.3);
+    border-radius: 12px; padding: 20px;
+    display: none;
+  }
+  .ai-response-box.show { display: block; }
+  .ai-response-box h3 { font-size: 14px; font-weight: 500; color: #c4bbff; margin-bottom: 14px; }
+  .ai-lyrics { font-size: 13px; color: var(--text2); line-height: 2; white-space: pre-wrap; }
+  .ai-style-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .ai-tag {
+    padding: 4px 12px; border-radius: 20px; font-size: 11px;
+    background: rgba(124,111,247,0.15); border: 1px solid rgba(124,111,247,0.3);
+    color: #c4bbff;
+  }
+ 
+  /* ── Suno copy block ── */
+  .suno-block {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px; padding: 14px 16px;
+    margin-top: 14px;
+  }
+  .suno-block .sb-label {
+    font-size: 11px; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .copy-btn {
+    background: none; border: 1px solid var(--border);
+    color: var(--text2); font-size: 11px; padding: 3px 10px;
+    border-radius: 6px; cursor: pointer; transition: all .15s;
+  }
+  .copy-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+  .suno-block .sb-text {
+    font-size: 12.5px; color: var(--text);
+    font-family: 'Space Grotesk', monospace;
+    line-height: 1.7;
+  }
+ 
+  /* ── Generate CTA ── */
+  .cta-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, var(--bg) 60%, transparent);
+    padding: 20px; z-index: 100;
+    display: flex; justify-content: center;
+  }
+  .gen-btn {
+    display: flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    border: none; border-radius: 28px;
+    padding: 16px 40px;
+    color: white; font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+    box-shadow: 0 4px 24px rgba(124,111,247,0.45);
+    transition: all .2s;
+    min-width: 280px; justify-content: center;
+  }
+  .gen-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(124,111,247,0.55); }
+  .gen-btn:active { transform: scale(0.98); }
+  .gen-btn .rocket { font-size: 18px; animation: rocketFloat 2s ease-in-out infinite; }
+  @keyframes rocketFloat {
+    0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)}
+  }
+  .gen-btn.loading { background: linear-gradient(135deg, #534AB7, #7c6ff7); cursor: wait; }
+ 
+  /* ── Loading dots ── */
+  .loading-dots span {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: white; margin: 0 2px;
+    animation: bounce .8s ease-in-out infinite;
+  }
+  .loading-dots span:nth-child(2){animation-delay:.15s}
+  .loading-dots span:nth-child(3){animation-delay:.3s}
+  @keyframes bounce {0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+ 
+  /* ── Scroll reveal ── */
+  .fade-in { opacity: 0; transform: translateY(16px); transition: opacity .4s, transform .4s; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+ 
+  /* ── Progress bar ── */
+  .progress-wrap { margin: 16px 0 0; display: none; }
+  .progress-wrap.show { display: block; }
+  .progress-track { height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
+  .progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent1), var(--accent3));
+    border-radius: 2px; transition: width .3s;
+  }
+  .progress-text { font-size: 11px; color: var(--text3); margin-top: 6px; }
+</style>
+</head>
+<body>
+ 
+<div id="stars"></div>
+ 
+<div class="container">
+ 
+  <!-- Header -->
+  <div class="header fade-in">
+    <div class="logo-orbit">
+      <div class="ring"><div class="dot"></div></div>
+      <div class="core"></div>
+    </div>
+    <h1>새로운시작</h1>
+    <p>Suno AI × Anti-Gravity — 나만의 노래를 우주로 쏘아 올리세요</p>
+  </div>
+ 
+  <!-- ① 노래 주제 & 분위기 -->
+  <div class="section fade-in" style="animation-delay:.05s">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(124,111,247,0.12)">🎵</div>
+      <div>
+        <div class="section-title">노래 주제 & 분위기</div>
+        <div class="section-sub">여러 개 선택 가능</div>
+      </div>
+    </div>
+    <div class="tag-group" id="mood-tags">
+      <span class="tag active" data-group="mood">사랑</span>
+      <span class="tag" data-group="mood">이별</span>
+      <span class="tag" data-group="mood">설렘</span>
+      <span class="tag" data-group="mood">그리움</span>
+      <span class="tag" data-group="mood">희망</span>
+      <span class="tag" data-group="mood">우울</span>
+      <span class="tag" data-group="mood">자유</span>
+      <span class="tag" data-group="mood">파티</span>
+      <span class="tag" data-group="mood">극복</span>
+      <span class="tag" data-group="mood">모험</span>
+      <span class="tag" data-group="mood">추억</span>
+      <span class="tag" data-group="mood">위로</span>
+    </div>
+  </div>
+ 
+  <!-- ② 가사 직접 입력 -->
+  <div class="section fade-in" style="animation-delay:.1s">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(6,182,212,0.12)">✍️</div>
+      <div>
+        <div class="section-title">가사 힌트 / 직접 입력 <span style="color:var(--text3);font-size:11px;">(선택)</span></div>
+        <div class="section-sub">비워두면 AI가 자동으로 생성합니다</div>
+      </div>
+    </div>
+    <textarea class="styled-textarea" id="lyric-hint" placeholder="예: 봄날에 너와 걷던 그 길이 생각나, 다시 만나고 싶다는 말을 꺼내지 못하고..." maxlength="300" oninput="updateCount()"></textarea>
+    <div class="char-count"><span id="char-cnt">0</span> / 300</div>
+  </div>
+ 
+  <!-- ③ 음악 장르 -->
+  <div class="section fade-in" style="animation-delay:.15s">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(168,85,247,0.12)">🎸</div>
+      <div>
+        <div class="section-title">음악 장르</div>
+        <div class="section-sub">여러 개 선택 가능</div>
+      </div>
+    </div>
+    <div class="tag-group" id="genre-tags">
+      <span class="tag active" data-group="genre">K-Pop</span>
+      <span class="tag" data-group="genre">발라드</span>
+      <span class="tag" data-group="genre">R&amp;B</span>
+      <span class="tag" data-group="genre">Indie Pop</span>
+      <span class="tag" data-group="genre">Hip-Hop</span>
+      <span class="tag" data-group="genre">EDM</span>
+      <span class="tag" data-group="genre">Jazz</span>
+      <span class="tag" data-group="genre">Lo-Fi</span>
+      <span class="tag" data-group="genre">록</span>
+      <span class="tag" data-group="genre">Folk</span>
+      <span class="tag" data-group="genre">Classical</span>
+      <span class="tag" data-group="genre">트로트</span>
+    </div>
+  </div>
+ 
+  <!-- ④ 보컬 스타일 -->
+  <div class="section fade-in" style="animation-delay:.2s">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(244,114,182,0.12)">🎤</div>
+      <div>
+        <div class="section-title">보컬 스타일</div>
+        <div class="section-sub">하나를 선택하세요</div>
+      </div>
+    </div>
+    <div class="vocal-grid" id="vocal-cards">
+      <div class="vocal-card active" data-vocal="female-soft">
+        <span class="vc-icon">👩‍🎤</span>
+        <div class="vc-label">여성 소프트</div>
+        <div class="vc-sub">부드럽고 감미로운</div>
+      </div>
+      <div class="vocal-card" data-vocal="female-powerful">
+        <span class="vc-icon">💃</span>
+        <div class="vc-label">여성 파워풀</div>
+        <div class="vc-sub">강렬하고 에너지</div>
+      </div>
+      <div class="vocal-card" data-vocal="male-soft">
+        <span class="vc-icon">🧑‍🎤</span>
+        <div class="vc-label">남성 소프트</div>
+        <div class="vc-sub">잔잔하고 따뜻한</div>
+      </div>
+      <div class="vocal-card" data-vocal="male-powerful">
+        <span class="vc-icon">🎙️</span>
+        <div class="vc-label">남성 파워풀</div>
+        <div class="vc-sub">강하고 힘있는</div>
+      </div>
+      <div class="vocal-card" data-vocal="duet">
+        <span class="vc-icon">👫</span>
+        <div class="vc-label">듀엣</div>
+        <div class="vc-sub">남녀 혼성</div>
+      </div>
+      <div class="vocal-card" data-vocal="choir">
+        <span class="vc-icon">🎶</span>
+        <div class="vc-label">코러스</div>
+        <div class="vc-sub">합창 스타일</div>
+      </div>
+      <div class="vocal-card" data-vocal="rap">
+        <span class="vc-icon">🎤</span>
+        <div class="vc-label">랩 / 힙합</div>
+        <div class="vc-sub">리드미컬한</div>
+      </div>
+      <div class="vocal-card" data-vocal="no-vocal">
+        <span class="vc-icon">🎹</span>
+        <div class="vc-label">보컬 없음</div>
+        <div class="vc-sub">순수 연주곡</div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- ⑤ 세부 사운드 옵션 -->
+  <div class="section fade-in" style="animation-delay:.25s">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,0.12)">🎛️</div>
+      <div>
+        <div class="section-title">세부 사운드 옵션</div>
+        <div class="section-sub">여러 개 선택 가능</div>
+      </div>
+    </div>
+    <div class="tag-group" id="sound-tags">
+      <span class="tag" data-group="sound">어쿠스틱 기타</span>
+      <span class="tag" data-group="sound">피아노 중심</span>
+      <span class="tag active" data-group="sound">신스 웨이브</span>
+      <span class="tag" data-group="sound">드럼 비트</span>
+      <span class="tag" data-group="sound">오케스트라</span>
+      <span class="tag" data-group="sound">베이스 헤비</span>
+      <span class="tag active" data-group="sound">레이어드 보컬</span>
+      <span class="tag" data-group="sound">리버브 효과</span>
+      <span class="tag" data-group="sound">미니멀</span>
+      <span class="tag" data-group="sound">에픽 사운드</span>
+    </div>
+  </div>
+ 
+  <!-- ⑥ 노래 형식 선택 -->
+  <div class="section fade-in" style="animation-delay:.3s">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(6,182,212,0.12)">📋</div>
+      <div>
+        <div class="section-title">노래 형식 선택</div>
+        <div class="section-sub">가사 구조를 선택하세요</div>
+      </div>
+    </div>
+    <div class="format-grid">
+      <div class="format-card active" data-format="standard">
+        <div class="fc-top"><span class="fc-ico">🔁</span><span class="fc-name">기본형</span></div>
+        <div class="fc-desc">Verse → Chorus → Bridge</div>
+      </div>
+      <div class="format-card" data-format="short">
+        <div class="fc-top"><span class="fc-ico">⚡</span><span class="fc-name">숏폼</span></div>
+        <div class="fc-desc">짧고 임팩트 있는 구조</div>
+      </div>
+      <div class="format-card" data-format="ballad">
+        <div class="fc-top"><span class="fc-ico">🌙</span><span class="fc-name">발라드형</span></div>
+        <div class="fc-desc">감정선 긴 서사 구조</div>
+      </div>
+      <div class="format-card" data-format="anthem">
+        <div class="fc-top"><span class="fc-ico">🔥</span><span class="fc-name">앤섬</span></div>
+        <div class="fc-desc">강렬한 후렴 반복</div>
+      </div>
+      <div class="format-card" data-format="narrative">
+        <div class="fc-top"><span class="fc-ico">📖</span><span class="fc-name">내러티브</span></div>
+        <div class="fc-desc">이야기 중심 서사</div>
+      </div>
+      <div class="format-card" data-format="freestyle">
+        <div class="fc-top"><span class="fc-ico">🌀</span><span class="fc-name">자유형</span></div>
+        <div class="fc-desc">AI 자율 구성</div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- ⑦ 언어 -->
+  <div class="section fade-in" style="animation-delay:.35s">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(124,111,247,0.12)">🌐</div>
+      <div>
+        <div class="section-title">가사 언어</div>
+      </div>
+    </div>
+    <div class="toggle-row" id="lang-toggle">
+      <button class="toggle-btn active" data-lang="korean">한국어</button>
+      <button class="toggle-btn" data-lang="english">English</button>
+      <button class="toggle-btn" data-lang="mixed">혼합 (한+영)</button>
+      <button class="toggle-btn" data-lang="japanese">日本語</button>
+    </div>
+  </div>
+ 
+  <!-- ⑧ Suno Prompt 미리보기 -->
+  <div class="section fade-in" style="animation-delay:.4s">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(6,182,212,0.12)">🔍</div>
+      <div>
+        <div class="section-title">Suno Style Prompt 미리보기</div>
+        <div class="section-sub">선택 내용이 자동 반영됩니다</div>
+      </div>
+    </div>
+    <div class="prompt-label">
+      <span>style tags (suno에 붙여넣기)</span>
+    </div>
+    <div class="prompt-preview" id="prompt-preview">K-Pop, Soft Female Vocal, Synth Wave, Layered Vocals, Standard Structure, Korean Lyrics, Love Theme</div>
+  </div>
+ 
+  <!-- ⑨ AI 생성 결과 -->
+  <div class="ai-response-box" id="ai-result">
+    <h3>✨ AI 생성 결과</h3>
+    <div class="ai-lyrics" id="ai-lyrics-text"></div>
+    <div class="ai-style-tags" id="ai-style-output"></div>
+ 
+    <div class="suno-block">
+      <div class="sb-label">
+        <span>📋 Suno Style Prompt</span>
+        <button class="copy-btn" onclick="copyText('suno-style-out')">복사</button>
+      </div>
+      <div class="sb-text" id="suno-style-out"></div>
+    </div>
+ 
+    <div class="suno-block">
+      <div class="sb-label">
+        <span>📝 Suno Lyrics (붙여넣기용)</span>
+        <button class="copy-btn" onclick="copyText('suno-lyrics-out')">복사</button>
+      </div>
+      <div class="sb-text" id="suno-lyrics-out"></div>
+    </div>
+  </div>
+ 
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="progress-text" id="progress-text">가사 생성 중...</div>
+  </div>
+ 
+  <div style="height:80px"></div>
+</div>
+ 
+<!-- CTA -->
+<div class="cta-bar">
+  <button class="gen-btn" id="gen-btn" onclick="generateSong()">
+    <span class="rocket">🚀</span>
+    나만의 가사 & 스타일 완성하기
+  </button>
+</div>
+ 
+<script>
+// ── Stars ──
+const starsEl = document.getElementById('stars');
+for(let i=0;i<80;i++){
+  const s = document.createElement('div');
+  s.className='star';
+  const sz = Math.random()*2+0.5;
+  s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:-${Math.random()*4}s;opacity:${Math.random()*0.5+0.1}`;
+  starsEl.appendChild(s);
+}
+ 
+// ── Fade-in on scroll ──
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.1});
+document.querySelectorAll('.fade-in').forEach(el=>observer.observe(el));
+ 
+// ── Tag selection ──
+function bindTags(groupId, multiSelect=true) {
+  document.querySelectorAll(`[data-group="${groupId}"]`).forEach(t=>{
+    t.addEventListener('click',()=>{
+      if(!multiSelect){
+        document.querySelectorAll(`[data-group="${groupId}"]`).forEach(x=>x.classList.remove('active'));
+        t.classList.add('active');
+      } else {
+        t.classList.toggle('active');
+      }
+      updatePrompt();
+    });
+  });
+}
+bindTags('mood',true);
+bindTags('genre',true);
+bindTags('sound',true);
+ 
+// ── Vocal cards ──
+document.querySelectorAll('.vocal-card').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('.vocal-card').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    updatePrompt();
+  });
+});
+ 
+// ── Format cards ──
+document.querySelectorAll('.format-card').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('.format-card').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    updatePrompt();
+  });
+});
+ 
+// ── Lang toggle ──
+document.querySelectorAll('[data-lang]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('[data-lang]').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    updatePrompt();
+  });
+});
+ 
+// ── Char count ──
+function updateCount(){
+  const v = document.getElementById('lyric-hint').value.length;
+  document.getElementById('char-cnt').textContent=v;
+}
+ 
+// ── Collect state ──
+function getState(){
+  const moods=[...document.querySelectorAll('[data-group="mood"].active')].map(x=>x.textContent);
+  const genres=[...document.querySelectorAll('[data-group="genre"].active')].map(x=>x.textContent);
+  const sounds=[...document.querySelectorAll('[data-group="sound"].active')].map(x=>x.textContent);
+  const vocal=(document.querySelector('.vocal-card.active')||{}).dataset?.vocal||'female-soft';
+  const format=(document.querySelector('.format-card.active')||{}).dataset?.format||'standard';
+  const lang=(document.querySelector('[data-lang].active')||{}).dataset?.lang||'korean';
+  const hint=document.getElementById('lyric-hint').value.trim();
+  return {moods,genres,sounds,vocal,format,lang,hint};
+}
+ 
+const vocalLabels={
+  'female-soft':'Soft Female Vocal',
+  'female-powerful':'Powerful Female Vocal',
+  'male-soft':'Soft Male Vocal',
+  'male-powerful':'Powerful Male Vocal',
+  'duet':'Male & Female Duet',
+  'choir':'Choir Vocals',
+  'rap':'Rap Vocal',
+  'no-vocal':'Instrumental Only'
+};
+const formatLabels={
+  'standard':'Standard Structure (Verse-Chorus-Bridge)',
+  'short':'Short Form',
+  'ballad':'Ballad Structure',
+  'anthem':'Anthem Structure',
+  'narrative':'Narrative Structure',
+  'freestyle':'Free Structure'
+};
+const langLabels={
+  'korean':'Korean Lyrics',
+  'english':'English Lyrics',
+  'mixed':'Korean-English Mixed Lyrics',
+  'japanese':'Japanese Lyrics'
+};
+ 
+// ── Update preview ──
+function updatePrompt(){
+  const s=getState();
+  const parts=[
+    ...s.genres,
+    vocalLabels[s.vocal]||s.vocal,
+    ...s.sounds,
+    formatLabels[s.format]||s.format,
+    langLabels[s.lang]||s.lang,
+    ...s.moods.map(m=>m+' Theme')
+  ].filter(Boolean);
+  document.getElementById('prompt-preview').textContent=parts.join(', ');
+}
+ 
+// ── Generate ──
+async function generateSong(){
+  const s=getState();
+  const btn=document.getElementById('gen-btn');
+  const prog=document.getElementById('progress-wrap');
+  const fill=document.getElementById('progress-fill');
+  const progText=document.getElementById('progress-text');
+  const resultBox=document.getElementById('ai-result');
+ 
+  btn.classList.add('loading');
+  btn.innerHTML='<div class="loading-dots"><span></span><span></span><span></span></div>';
+  prog.classList.add('show');
+  resultBox.classList.remove('show');
+ 
+  const steps=['분위기 분석 중...','장르 & 사운드 매핑...','가사 구조 설계 중...','AI 가사 생성 중...','Suno 프롬프트 최적화...'];
+  let step=0;
+  const stepInterval=setInterval(()=>{
+    if(step<steps.length){
+      progText.textContent=steps[step];
+      fill.style.width=`${(step+1)/steps.length*85}%`;
+      step++;
+    }
+  },600);
+ 
+  const stylePrompt=document.getElementById('prompt-preview').textContent;
+  const hintPart=s.hint?`\n\n참고할 가사 힌트: "${s.hint}"`:'';
+  const vocalKo={'female-soft':'부드러운 여성 보컬','female-powerful':'파워풀한 여성 보컬','male-soft':'잔잔한 남성 보컬','male-powerful':'강렬한 남성 보컬','duet':'남녀 듀엣','choir':'합창 코러스','rap':'랩/힙합 보컬','no-vocal':'연주곡 (보컬 없음)'};
+  const formatKo={'standard':'기본형 (Verse-Chorus-Bridge)','short':'숏폼','ballad':'발라드형','anthem':'앤섬','narrative':'내러티브','freestyle':'자유형'};
+  const langKo={'korean':'한국어','english':'영어','mixed':'한국어+영어 혼합','japanese':'일본어'};
+ 
+  const prompt=`당신은 Suno AI용 전문 송라이터입니다.
+ 
+다음 조건으로 노래 가사와 Suno 스타일 프롬프트를 만들어주세요:
+- 주제/분위기: ${s.moods.join(', ')||'자유'}
+- 장르: ${s.genres.join(', ')||'K-Pop'}
+- 보컬: ${vocalKo[s.vocal]||s.vocal}
+- 사운드: ${s.sounds.join(', ')||'기본'}
+- 구조: ${formatKo[s.format]||s.format}
+- 언어: ${langKo[s.lang]||s.lang}${hintPart}
+ 
+아래 형식으로 JSON만 반환하세요 (마크다운 없이):
+{
+  "style_prompt": "Suno에 입력할 영문 스타일 태그 (쉼표 구분, 20단어 이내)",
+  "lyrics": "완성된 가사 (구조 태그 포함: [Verse 1], [Chorus], [Bridge] 등)",
+  "summary": "이 노래의 분위기와 특징을 한 문장으로"
+}`;
+ 
+  try{
+    const reqBody = {
+      moods: s.moods,
+      genres: s.genres,
+      vocal: vocalKo[s.vocal]||s.vocal,
+      sounds: s.sounds,
+      format: formatKo[s.format]||s.format,
+      lang: langKo[s.lang]||s.lang,
+      hint: s.hint
+    };
+
+    const res=await fetch('/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(reqBody)
+    });
+    const data=await res.json();
+    clearInterval(stepInterval);
+    fill.style.width='100%';
+    progText.textContent='완료!';
+ 
+    if(data.error) throw new Error(data.error);
+
+    let text=data.result || '';
+    let parsed;
+    try{ parsed=JSON.parse(text); }
+    catch(e){ parsed={style_prompt:stylePrompt,lyrics:text,summary:'AI가 생성한 노래입니다.'}; }
+ 
+    document.getElementById('ai-lyrics-text').textContent=parsed.lyrics||'';
+    document.getElementById('suno-style-out').textContent=parsed.style_prompt||stylePrompt;
+    document.getElementById('suno-lyrics-out').textContent=parsed.lyrics||'';
+ 
+    const stBox=document.getElementById('ai-style-output');
+    stBox.innerHTML='';
+    if(parsed.summary){
+      const badge=document.createElement('span');
+      badge.className='ai-tag'; badge.textContent='✦ '+parsed.summary;
+      stBox.appendChild(badge);
+    }
+    (parsed.style_prompt||'').split(',').slice(0,6).forEach(t=>{
+      if(!t.trim())return;
+      const b=document.createElement('span');
+      b.className='ai-tag'; b.textContent=t.trim();
+      stBox.appendChild(b);
+    });
+ 
+    setTimeout(()=>{
+      prog.classList.remove('show');
+      resultBox.classList.add('show');
+      resultBox.scrollIntoView({behavior:'smooth',block:'start'});
+    },400);
+ 
+  }catch(err){
+    clearInterval(stepInterval);
+    document.getElementById('ai-lyrics-text').textContent='오류가 발생했습니다. 다시 시도해주세요.\n'+err;
+    resultBox.classList.add('show');
+  }
+ 
+  btn.classList.remove('loading');
+  btn.innerHTML='<span class="rocket">🚀</span> 나만의 가사 & 스타일 완성하기';
+}
+ 
+// ── Copy ──
+function copyText(id){
+  const text=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=event.target;
+    btn.textContent='복사됨!';
+    setTimeout(()=>btn.textContent='복사',1500);
+  });
+}
+ 
+updatePrompt();
+</script>
+</body>
+</html>
