@@ -789,8 +789,12 @@ async function generateSong(){
     if(data.error) throw new Error(data.error);
 
     let text=data.result || '';
+    
+    // 제거: 마크다운 코드 블록 (```json 등)
+    let cleanedText = text.replace(/^```(json)?\n?/i, '').replace(/\n?```$/i, '').trim();
+
     let parsed;
-    try{ parsed=JSON.parse(text); }
+    try{ parsed=JSON.parse(cleanedText); }
     catch(e){ parsed={title:'생성된 노래', style_prompt:stylePrompt, lyrics:text, summary:'AI가 생성한 노래입니다.'}; }
  
     document.getElementById('ai-song-title').textContent = parsed.title || '나만의 우주 테마 곡 🎵';
