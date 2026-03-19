@@ -8,6 +8,7 @@ load_dotenv()
 app = Flask(__name__, static_folder='static')
 
 api_key = os.environ.get("GEMINI_API_KEY")
+print(f"Loaded API KEY starts with: {api_key[:10] if api_key else 'None'}")
 client = genai.Client(api_key=api_key)
 
 @app.route('/')
