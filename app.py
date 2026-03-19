@@ -8,8 +8,11 @@ load_dotenv()
 app = Flask(__name__, static_folder='static')
 
 api_key = os.environ.get("GEMINI_API_KEY")
-print(f"Loaded API KEY starts with: {api_key[:10] if api_key else 'None'}")
-client = genai.Client(api_key=api_key)
+if api_key:
+    client = genai.Client(api_key=api_key)
+else:
+    client = None
+    print("Warning: GEMINI_API_KEY is not set.")
 
 @app.route('/')
 def serve_index():
@@ -51,6 +54,9 @@ def generate_song():
 }"""
 
     try:
+        if not client:
+            return jsonify({"error": "GEMINI_API_KEY is missing on Vercel. Please check Project Settings > Environment Variables."}), 500
+            
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt,
